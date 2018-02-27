@@ -417,6 +417,14 @@ with user id 1234 in the users table.
 
 				<section data-markdown>
 					<script type="text/template">
+						# Why rebasing?
+						- real world example
+						<img height="75%" width="75%" src="images/why-should-i-care.png" style="border: 0; box-shadow: none"/>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
 						## What is rebasing?
 
 						Diverging: making commits on two different branches
@@ -761,17 +769,25 @@ git merge experiment
 
 				<section data-markdown>
 					<script type="text/template">
-						## Remove (accidentally) added credentials from Git history
-						- let's say you have pushed credentials in `PATH-TO-SENSITIVE-DATA`
+						## Remove (accidentally) added credentials
+						- you have credentials in `PATH-TO-SENSITIVE-DATA`
+						  - `git rm PATH-TO-SENSITIVE-DATA` won't do it!!!
 						- remove sensitive data from git history
-						```
+						```sh
 						git filter-branch --force --index-filter \
 						'git rm --cached --ignore-unmatch PATH-TO-SENSITIVE-DATA' \
 						--prune-empty --tag-name-filter cat -- --all
 						```
-						- check for clean code / code smells
-						- check for code style
-						- use Gitlab comments for specific feedback
+						- add `PATH-TO-SENSITIVE-DATA` to `.gitignore`
+						```sh
+						echo "PATH-TO-SENSITIVE-DATA" >> .gitignore
+						git add .gitignore
+						git commit -m "add PATH-TO-SENSITIVE-DATA to .gitignore"
+						```
+						- now is one of the rare moments to use `-f`
+						```sh
+						git push origin --force --all
+						```
 					</script>
 				</section>
 
