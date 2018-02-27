@@ -1,0 +1,837 @@
+	<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Proper Git</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/solarized.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<h2>Proper Git</h2>
+					<h1 style="text-transform: none">DOs & DON'Ts</h1>
+					<img height="40%" width="40%" src="images/git-logo.png" style="border: 0; box-shadow: none"/>
+					<p style="font-size: 50%">image source: https://commons.wikimedia.org/wiki/File:Git-logo.svg</p>
+				</section>
+				<!--
+				<section data-markdown>
+				    <script type="text/template">
+					# Michael Lihs
+					
+					##@kaktusmimi
+					</script>
+				</section>
+				-->
+				<section data-markdown>
+				    <script type="text/template">
+						## Agenda
+						<ul style="display: inline-block;">
+							<li>setup & configuration</li>
+							<li>commit messages</li>
+							<li>command line vs. UIs</li>
+							<li>merge vs. rebase</li>
+							<li>tagging & branching</li>
+							<li>merge requests</li>
+							<li>sensitive information</li>
+						</ul>
+				    </script>
+				</section>
+
+
+				<section data-markdown>
+					<script type="text/template">
+						<h1 style="font-size: 800%">DISCLAIMER</h1>
+						<h2>partly oppinionated</h2>
+					</script>
+				</section>
+
+
+				<section data-markdown>
+					<script type="text/template">
+						<h1 style="font-size: 800%">Setup & Configuration</h1>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## get yourself a proper shell!
+						- Windows only
+						  - [Git Bash](https://gitforwindows.org/) (Cygwin)
+						  - [Babun](http://babun.github.io/) (zsh)
+						  - Putty ain't no shell!
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Gitify your shell
+						<img src="images/gitified-shell.png" style="border: 0; box-shadow: none"/>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## ssh keys
+						- generate ssh keys
+						- follow [this github article](https://help.github.com/articles/connecting-to-github-with-ssh/) on how to do it
+						- copy public ssh key to your Gitlab user's profile
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						<h2 style="text-transform: none">` ~/.ssh/config`</h2>
+						- add the following lines to your `~/.ssh/config`
+						```sh
+						Host rb-bic-gitlab.de.bosch.com
+						    IdentityFile ~/.ssh/id_rsa
+						```
+						- alternative: set up ssh agent with your private key
+						- pro tip: use OSC1's [`ssh-autoconf`](https://rb-bic-gitlab.de.bosch.com/bic/tooling/ssh-autoconf.git)
+						- when cloning a git repository, always use the `git@...` URL (ssh)
+					</script>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+				        <h2 style="text-transform: none">`~/.gitconfig`</h2>
+
+- set proper user name and email
+	```sh
+	[user]
+	  name = Michael Lihs (CI/OSC1)
+	  email = michael.lihs@de.bosch.com
+    ```
+- configure your aliases
+	```sh
+	[alias]
+	  # @see https://git.wiki.kernel.org/index.php/Aliases
+	  b = branch
+	  ci = commit
+	  cl = clone
+	  co = checkout
+	```
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						<h2 style="text-transform: none">`~/.gitconfig`</h2>
+						- set your editor of choice
+						  - for sublime
+						  ```sh
+						  git config --global core.editor "subl -n -w"
+						  ```
+						  - for atom
+						  ```sh
+						  git config --global core.editor "atom --wait"
+						  ```
+						- sometimes you need to set `$GIT_EDITOR` (as well)
+						```sh
+						export $GIT_EDITOR="subl -n -w"
+						```
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						<h2 style="text-transform: none">` ~/.gitignore_global`</h2>
+						- configure your global ignores
+```sh
+*~
+*.swp
+.DS_Store
+.idea/
+```
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Line endings
+						- Agree on line endings
+						- Mixed line endings mess up
+						  - builds
+						  - change sets / history
+						- we should use Unix line endings!
+						  - because our infrastructure is unix
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Windows & File Permissions
+						- Windows doesn't know file permissions
+						  - git does
+						- you can check them via
+						```sh
+						$ git ls-tree HEAD
+						100644 blob 5f9440363bda3ca7d0dfc2a5aef2825ad33d853f    text.txt
+						```
+						- you can set them via
+						```sh
+						$ git update-index --chmod=+x text.txt
+						$ git commit -m "change file mode"
+						[master faabac1] change file mode
+						1 file changed, 0 insertions(+), 0 deletions(-)
+						mode change 100644 => 100755 text.txt
+						```
+						* DO NOT run `git add ...` after `git update-index`
+					</script>
+				</section>
+
+
+				<section data-markdown>
+					<script type="text/template">
+						<h1 style="font-size: 800%">Commit Messages</h1>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Goals of Commit Messages
+						- Relate code changes to requirements
+						- Speed up reviewing process
+						- Help us in the future to find out why a change was made
+						- Help us write good release notes
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Good commits / commit messages
+						- commit early, commit often
+						- commit should contain exactly one logical change
+						- describe what you did in imperative mode:
+						  - "add", "fix", "change" instead of "added", "fixed", "changed"
+						- reference ticket that triggered change
+						- provide migration steps if application changed
+						- if you really need to push work-in-progress, clearly mark it with `WIP`
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Git Commit Format
+```md
+TICKET-1234 short one-line summary of change (50-75 characters)
+         <BLANK LINE>
+Multiple paragraphs to explain patch
+in detail. Don't describe code, describe
+intent and approach. Keep in present tense.
+```
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Git Commit Message Example
+```md
+JIRA-1234 add command for deleting users
+
+You can now delete a user via
+
+    mytool user delete -i <ID>
+
+Running the testcases now requires a database row
+with user id 1234 in the users table.
+```
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Bad commits / commit messages
+						- end-of-day commits (SCM as backup system)
+						- per-file commit (no logical grouping)
+						- lazy commit messages, e.g.
+						  - `added stuff`
+						  - `lot's of changes`
+						- two changes in one patch
+						- whitespace changes together with code changes
+						- mix of refactoring and feature development
+						- no conventions in your team
+						- generally avoid `git add .`
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Fix commit messages gone wrong
+						- for latest commit, use
+						```
+						git commit --amend
+						```
+						- for older commits, use (where `N` indicates the number of commits you want to edit)
+						```
+						git rebase -i HEAD~N
+						```
+						  - **NEVER** do this on the `master` branch
+						  - be very careful with pushed changes
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						<h2 style="text-transform: none">`git rebase -i`</h2>
+
+						```sh
+						pick 737c66c Meetup post
+						pick ca4279b add blog post: coding for kids
+						pick 96814c8 fix some typos...
+						pick 0379cbe first draft of testing docker blogpost
+
+						# Rebase de3e16f..0379cbe onto de3e16f (4 commands)
+						#
+						# Commands:
+						# p, pick = use commit
+						# r, reword = use commit, but edit the commit message
+						# e, edit = use commit, but stop for amending
+						# s, squash = use commit, but meld into previous commit
+						# f, fixup = like "squash", but discard this commit's log message
+						# x, exec = run command (the rest of the line) using shell
+						# d, drop = remove commit
+						```
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						<h2 style="text-transform: none">`git rebase -i`</h2>
+
+						- change commit you want to edit with `reword`
+							```sh
+							reword 737c66c Meetup post
+							pick ca4279b add blog post: coding for kids
+							pick 96814c8 fix some typos...
+							pick 0379cbe first draft of testing docker blogpost
+
+							...
+							```
+						- save and exit editor
+						- a new editor window will open
+						  - edit commit message
+						  - save and exit editor again
+						- commit message will be changed
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Allow empty initial commits
+
+						```sh
+						$ git init
+						Initialized empty Git repository in ...
+
+						$ git commit --allow-empty -m "initial commit"
+						[master (root-commit) 9c98dbd] initial commit
+						```
+					</script>
+				</section>
+
+
+
+				<section data-markdown>
+					<script type="text/template">
+						<h1 style="font-size: 800%">Command Line vs UI</h1>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## When to use UI tools
+						- visually review your changes
+						  - check for accidentally deleted stuff
+						  - check for accidentally added stuff
+						- discard unwanted changes
+						- group logic change sets
+						  - avoid `git add .`
+						  - only commit selected lines / blocks
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Adding selected Lines
+						<img  style="border: 0; box-shadow: none" src="images/stree.png">
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Productivity
+						- add a bash alias `stree` (e.g. into `~/.bashrc`)
+						```sh
+						alias stree="/usr/local/bin/stree"
+						```
+						- open your git UI in current directory with
+						```sh
+						stree .
+						```
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Overview of UI tools
+						- IntelliJ git plugin (free)
+						  - Windows, Mac & Linux
+						  - integrates in IDE
+						  - cannot handle submodules
+						- [Atlassion Sourcetree](https://www.sourcetreeapp.com/) (free)
+						  - Only Mac & Windows
+						  - couldn't handle ssh keys on Windows (as of 2016)
+						- [Git Kraken](https://www.gitkraken.com/) (~50$/year)
+						  - Windows, Mac & Linux
+						  - great usability
+						  - can handle ssh keys on Windows
+					</script>
+				</section>
+
+
+
+				<section data-markdown>
+					<script type="text/template">
+						<h1 style="font-size: 800%">Merge vs Rebase</h1>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## What is rebasing?
+
+						Diverging: making commits on two different branches
+
+
+						<img height="100%" width="100%" src="images/basic-rebase-1.png" style="border: 0; box-shadow: none"/>
+
+						<p style="font-size: 50%">image source: https://git-scm.com/book/en/v2/Git-Branching-Rebasing</p>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## What is rebasing?
+
+						Merging to integrate diverged history
+
+```sh
+git checkout master
+git merge experiment
+```
+						<img height="100%" width="100%" src="images/basic-rebase-2.png" style="border: 0; box-shadow: none"/>
+
+						<p style="font-size: 50%">image source: https://git-scm.com/book/en/v2/Git-Branching-Rebasing</p>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## What is rebasing?
+
+						Rebasing to avoid merge commits (1)
+
+						```sh
+						git checkout experiment
+						git rebase master
+						```
+						<img height="100%" width="100%" src="images/basic-rebase-3.png" style="border: 0; box-shadow: none"/>
+
+						<p style="font-size: 50%">image source: https://git-scm.com/book/en/v2/Git-Branching-Rebasing</p>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## What is rebasing?
+
+						Rebasing to avoid merge commits (2)
+
+						```sh
+						git checkout master
+						git merge experiment
+						```
+						<img height="100%" width="100%" src="images/basic-rebase-4.png" style="border: 0; box-shadow: none"/>
+
+						<p style="font-size: 50%">image source: https://git-scm.com/book/en/v2/Git-Branching-Rebasing</p>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Resolving conflicts when rebasing
+						- let's say you create a new feature
+						```sh
+						git checkout -b my-feature
+						```
+						- you change a file `file.txt`
+						- you want to rebase `master` back into `my-feature`
+						  - meanwhile `file.txt` changed on `master` as well
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Resolving conflicts when rebasing
+						- TADAAAA: merge conflict
+						```sh
+						$ git rebase master
+						First, rewinding head to replay your work on top of it...
+						Applying: changed file
+						Using index info to reconstruct a base tree...
+						M	file.txt
+						Falling back to patching base and 3-way merge...
+						Auto-merging file.txt
+						CONFLICT (content): Merge conflict in file.txt
+						 ...
+						When you have resolved this problem, run "git rebase --continue".
+						If you prefer to skip this patch, run "git rebase --skip" instead.
+						To check out the original branch and stop rebasing, run "git rebase --abort".
+						```
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Resolving conflicts when rebasing
+						- First open `file.txt` in editor
+						```sh
+						1 <<<<<<< HEAD
+						2 original line changed in master
+						3 =======
+						4 original line changed in my-feature
+						5 >>>>>>> changed file
+						```
+						- remove the change you want to discard & exit
+						- stage your changes
+						```sh
+						$ git add file.txt
+						```
+						- continue with rebase
+						```sh
+						$ git rebase --continue
+						Applying: changed file
+						Recorded resolution for 'file.txt'.
+						```
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Pull with rebasing
+						- instead of `git pull` use
+						```
+						git pull -r <REMOTE> <BRANCH>
+						```
+						- same steps as above, but with remote branch
+						- alwas run **before** you pushed your changes
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## When to use rebase
+						- merge updates from master back into feature branch
+						- merge changes in other branches back into feature branch
+						- **never rebase on a pushed (master) branch**
+					</script>
+				</section>
+
+
+
+				<section data-markdown>
+					<script type="text/template">
+						<h1 style="font-size: 800%">Tagging & Branching</h1>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Tags vs Branches
+						- tags
+						  - point to a fixed commit - i.e. a version
+						  - do not change over time
+						  - should not be deleted
+						- branches
+						  - reference a commit that changes over time
+						  - are likely to be deleted
+						  - enable changes on multiple features in parallel
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+## Working with branches
+- creating a branch
+    ```sh
+	git checkout -b <BRANCH NAME>
+    ```
+- pushing a branch
+	```sh
+	git push <REMOTE> <BRANCH NAME>
+	```
+- fetching branches
+	```sh
+	git fetch -a
+	git checkout <BRANCH NAME>
+	```
+- deleting local / remote branches
+	```sh
+	git branch -d <BRANCH NAME>          # local branch
+	git push <REMOTE> :<BRANCH NAME>     # remote branch
+	```
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## What branch types do we use
+						- `feature` branches
+						  - new features
+						  - refactoring
+						  - example `feature/JIRA-1234`
+						- `bugfix` branches
+						  - fixing bugs
+						  - example `bugfix/JIRA-1234`
+						- `release` branches
+						  - freezing state of master for a release
+						  - example `release/1.0.3`
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Working with multiple branches
+						````sh
+						(on some branch)$ git checkout master
+
+						error: Your local changes to the following files would be
+						       overwritten by checkout:
+						          README.md
+						          index.html
+						Please commit your changes or stash them before you switch branches.
+						Aborting
+
+						$ git stash
+						Saved working directory and index state WIP on gh-pages:
+						    8843749  add content
+
+						$ git checkout master
+						Switched to branch 'master'
+
+						$ git stash apply
+                        ````
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Working with tags
+- listing tags
+	```sh
+	git tag
+	```
+- creating a tag
+	```sh
+	git tag -a <TAG NAME> -m "<MESSAGE>"
+	```
+- pushing a tag
+	```sh
+	git push <REMOTE> <TAG NAME>
+	```
+- fetching tags
+	```sh
+	git fetch -a
+	git checkout <TAG NAME>
+	```
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Proper tag names
+						- version tags
+						  - use [semantic versioning](http://semver.org): `MAJOR.MINOR.PATCH`
+						  - `MAJOR` indicates breaking changes
+						  - `MINOR` indicates new feature
+						  - `PATCH` indicates
+						  - do not use `v` in front of tag name
+					</script>
+				</section>
+
+
+
+				<section data-markdown>
+					<script type="text/template">
+						<h1 style="font-size: 800%">Merge Requests</h1>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Goals of Merge Requests
+						- keep master branch stable
+						  - allow work on multiple features in parallel
+						  - disable direct push to master
+						- use short living feature branches
+						  - group commits around features / tasks
+						- support code review
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+## Merge Request Workflow
+- Create a new feature branch
+	```sh
+    git checkout -b feature/<TICKET>
+	```
+- Commit your changes
+	```sh
+	git add ...
+	git commit -m "<TICKET> ..."
+	```
+- Push branch to server
+	```sh
+	git push origin feature/<TICKET>
+	```
+- Create Merge Request in Gitlab
+- Once feature is finished: delete local branch
+    ```sh
+	git branch -d feature/<TICKET>
+	```
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Code Reviews on Gitlab
+						- always check-out locally and build project
+						- check whether Jenkins job was successful
+						- check for clean code / code smells
+						- check for code style
+						- use Gitlab comments for specific feedback
+					</script>
+				</section>
+
+
+
+				<section data-markdown>
+					<script type="text/template">
+						<h1 style="font-size: 800%">Sensitive Data</h1>
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## `credentials.sample`
+						if your project requires credentials...
+						- provide a `credentials.sample` file in your repository
+						    ```yaml
+						    ---
+						    vcenter_password: "TODO provide vcenter password"
+						    ssl_certificate: |
+						        <TODO provide ssl certificate>
+						    ```
+						- after cloning: copy `credentials.sample.yml` to `credentials.yml`
+						  - describe this step in your `README`
+						- add `credentials.yml` to your `.gitignore`
+						  - make sure it never gets committed
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## Remove (accidentally) added credentials from Git history
+						- let's say you have pushed credentials in `PATH-TO-SENSITIVE-DATA`
+						- remove sensitive data from git history
+						```
+						git filter-branch --force --index-filter \
+						'git rm --cached --ignore-unmatch PATH-TO-SENSITIVE-DATA' \
+						--prune-empty --tag-name-filter cat -- --all
+						```
+						- check for clean code / code smells
+						- check for code style
+						- use Gitlab comments for specific feedback
+					</script>
+				</section>
+
+
+
+
+				<section data-markdown>
+					<script type="text/template">
+						<h1 style="font-size: 800%">Questions</h1>
+					</script>
+				</section>
+
+
+
+				<section data-markdown>
+					<script type="text/template">
+						## References
+						General
+						* https://www.git-tower.com/learn/git/ebook/en/command-line/appendix/best-practices
+						* https://gist.github.com/pandeiro/1552496
+						* https://sethrobertson.github.io/GitBestPractices/
+						* https://git-scm.com/book/en/v2
+						* https://www.lullabot.com/articles/git-best-practices-workflow-guidelines
+						* https://www.atlassian.com/git/tutorials/comparing-workflows#!workflow-gitflow
+						* https://zachholman.com/talk/how-github-uses-github-to-build-github/
+						* https://stackoverflow.com/questions/24582319/branching-and-merging-best-practices-in-git
+						* https://github.com/jlovs/git-scripts
+					</script>
+				</section>
+
+				<section data-markdown>
+					<script type="text/template">
+						## References
+						* Commit Messages
+						  * [On Commit Messages](http://who-t.blogspot.de/2009/12/on-commit-messages.html)
+						  * [Commit Guidelines in Pro Git Book](https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project)
+						  * [Commit Messages Guide](https://github.com/RomuloOliveira/commit-messages-guide)
+						* Removing sensitive data from git history
+						  * https://help.github.com/articles/removing-sensitive-data-from-a-repository/
+					</script>
+				</section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
