@@ -101,11 +101,10 @@
 						<h2 style="text-transform: none">` ~/.ssh/config`</h2>
 						- add the following lines to your `~/.ssh/config`
 						```sh
-						Host rb-bic-gitlab.de.bosch.com
+						Host your-company-git-server.com
 						    IdentityFile ~/.ssh/id_rsa
 						```
 						- alternative: set up ssh agent with your private key
-						- pro tip: use OSC1's [`ssh-autoconf`](https://rb-bic-gitlab.de.bosch.com/bic/tooling/ssh-autoconf.git)
 						- when cloning a git repository, always use the `git@...` URL (ssh)
 					</script>
 				</section>
@@ -117,8 +116,8 @@
 - set proper user name and email
 	```sh
 	[user]
-	  name = Michael Lihs (CI/OSC1)
-	  email = michael.lihs@de.bosch.com
+	  name = Michael Lihs
+	  email = michael.lihs@xxxxx.com
     ```
 - configure your aliases
 	```sh
